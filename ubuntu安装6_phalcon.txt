@@ -1,0 +1,132 @@
+
+
+一、安装
+
+1. 下载 cphalcon7-master.zip, 解压并进入解压目录下的 ext/目录, 执行命令：
+
+	/usr/local/hlb/php/bin/phpize   #主要是生成configure文件
+	
+	./configure --with-php-config=/usr/local/hlb/php/bin/php-config
+				--enable-phalcon	
+				--enable-process	#支持线程
+				
+				
+	make 
+	make install
+	
+2. 在/usr/local/hlb/php/etc/php.ini 里面加入：
+	extension=phalcon.so   	#php.ini文件也是藏匿在lib、etc、bin这仨之一，装的时候多找找
+
+3. 重启apache，重启php-fpm
+	service httpd restart
+	service php-fpm restart	
+4. PHP探针查看phalcon是否安装成功，其实就是执行 phpinfo()函数:
+	1)
+	http://127.0.0.1/redis.php   	 		#文件位于nginx目录下,内容为执行phpinfo()函数
+	http://127.0.0.1:8088/phpinfo.php  		#文件位于apache2目录下
+	正常显示的时候，可以看到是否有phalcon7框架
+	
+	2)
+	也可以在命令行执行 php -m 查看已安装的模块中是否有phalcon
+	
+5. nginx配置：
+	如果安装了nginx, 需要配置root路径
+
+  server
+  {
+	  listen 80 default_server;
+	  server_name localhost;
+	  root   /usr/local/games/hlbtest/public; #全局, 后面的location路径访问都是访问 root 指定目录下
+	  index  index.php;
+
+    location / {
+	
+		#if file exists return it right away
+        if (-f $request_filename) {
+            break;
+        }
+		
+		# otherwise rewrite it
+        if (!-e $request_filename) {
+            rewrite ^(.+)$ /index.php?_url=$1 last;
+            break;
+        }
+    }
+	
+    location ~ \.php {
+        fastcgi_index  /index.php;
+        fastcgi_pass   127.0.0.1:9000;   #nginx会将请求发给 php-fpm 处理,(因为php-fpm listn 127.0.0.1:9000 ,在php-fpm.d/www.conf设置)
+
+        include fastcgi.conf;
+        fastcgi_split_path_info       ^(.+\.php)(/.+)$;
+#        fastcgi_param PATH_INFO       $fastcgi_path_info;
+#        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+#        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    location ~ ^/nginx_status
+    {
+      stub_status on; #编译nginx的时候需要开启 stub_status ,用于监控nginx状态
+    }
+}	
+	
+	
+
+	
+二、开发指南:	
+	
+1. 安装开发工具(用来创建项目)
+	解压目录下可以看到 devtools目录，此为开发工具包
+	1)为目录下的文件 phalcon.php 创建软链接,并设置权限
+		ln -s /usr/local/work/cphalcon7-master/devtools/phalcon.php /usr/bin/phalcon
+		
+		chmod ugo+x /usr/bin/phalcon  #所有用户均可执行
+	
+	2) 控制台上输入如下命令： phalcon commands 可以看到支持的命令列表,比如创建项目，创建控制器等
+	
+		之前报错找不到 php ，是因为 /usr/local/hlb/php/bin目录环境变量未生效！！！
+		检查/etc/profile ，如果没有则加入, 然后 source /etc/profile 使之生效,
+		可以通过 echo $PATH 来查看当前环境变量
+		
+		
+	
+
+2. 创建项目
+	phalcon create-project hlbtest  #在当前目录下创建工程hlbtest
+	
+	在hlbtest/ 和hlbtest/public/ 会自动生成两个重写规则文件(隐藏文件) , 可以使用 ls -a 来查看
+	
+	1)在/usr/local/games/hlbtest/app/config/config.php 中修改 baseUri 为 "/", 否则每个url都会自动添加其值
+	
+	2)在/usr/local/games/hlbtest/app/config/service.php 中修改view组件,禁止将view路径名转成小写：
+		$view = new View();
+		$view->setDI($this);
+		$view->setViewsDir($config->application->viewsDir);
+		$view->disableLowerCase();  	#必须禁止啊，否则访问view的文件名全部都被转成小写了!!! fuck!
+		$view->registerEngines([
+			'.phtml' => PhpEngine::class
+
+		]);
+
+
+3. 创建控制器和view
+	1)在 app/controllers/创建一个controller, 如 TestController.php, 里面包含控制类下的各种方法,
+		如访问URL： http://localhost/test 和  http://localhost/test/getInfo 分别执行对应的action ；
+	
+	2)phalcon会默认查看app/views/是否有对应的html/phtml存在，如果有则显示
+	
+	3)代码中可以添加超链接, 也可以添加其他组件，如输入框等
+		比如在控制器的某一个action如getInfoAction()中添加如下：
+		echo $this->tag->linkTo("test/testView", "Sign Up Here!");  
+		那么访问URL：  http://localhost/test/getInfo 便会显示 超链接文字 "Sign Up Here!"，点击会跳转到
+		 http://localhost/test/testView
+		 
+	4) 添加按钮，及其处理方法
+		<?php echo $this->tag->submitButton("kkk") ?>
+		访问改URL，点击按钮kkk的时候会报错，提示无handler，那么在对应控制器里添加相应的 kkkAction即可
+	
+		
+		
+		
+		
+	

@@ -1,0 +1,11 @@
+
+使用命令 tail -f 可以实时的得到新追加到文件中的信息,常用来跟踪日志文件tail -f  , 如:
+
+tail -f /usr/local/games/hlbtest/app/logs/swoole.log
+
+则终端上会实时的显示跟踪到的log信息
+
+结束跟踪只需要按快捷键 Ctrl+C 
+
+
+

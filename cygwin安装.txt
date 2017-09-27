@@ -1,0 +1,81 @@
+
+1. 到http://cygwin.com，下载一个叫做setup.exe的GUI安装程序，用它能下载一个完整的cygwin
+
+2. 打开 setup.exe 根据指引选择 "Install form Internet"，选择一个镜像下载
+
+3. 之后弹出组件选择界面
+    1)必装的组件：
+		Devel中的gcc 和 make , 
+
+		Python中的python2-devel
+		
+		docbook2x
+	
+	2) 安装 autoconf和automake, libtool
+	
+		a)分别下载 autoconf-2.69.tar.gz , automake-1.15.1.tar.gz, libtool-2.4.6.tar.gz
+		并解压,
+		
+		b)进入解压后的目录执行
+		./configure   注意此时不要另外配置路径参数(--prefix)否则会导致找不到autoconf
+		
+		c)执行make 和make install 命令即可.
+		
+		d)检查是否安装成功，分别输入命令
+		autoconf --version
+		automake --version
+		
+	3)安装expat,用于解析xml
+		.buildconf.sh
+		
+		./configure --prefix=/usr/local/hlb/expat
+		make
+		make install
+		最后一步安装时makefile会报错,提示xmlwf.1 和XMLWF.1为同一个文件,
+		xmlwf.1: XMLWF.1
+			cp $< $@
+
+		XMLWF.1: xmlwf.xml
+			$(DOCBOOK_TO_MAN) xmlwf.xml
+	
+		把标记XMLWF.1改一下吧，改成 XMLWF2.1, 草!
+	
+	
+	4)安装apr, 下载解压apr-1.6.2.tar.gz，并进入该目录
+		./configure --prefix=/usr/local/hlb/apr --enable-threads 
+		make
+		make install
+		
+	5)这个模块可以先跳过,不安装(原因: 步骤6中编译报错找不到crypt()以为是系统没有加解密模块, 其实是自带有的，只是未链接进去！！)
+		//安装cryptopp 加解密模块,注意下载 Crypto++ 5.6.4 版本，其他版本试了下编译不过啊！fuck !!!
+		//解压后进入该目录,执行如下命令生成库文件
+		//make libcryptopp.a libcryptopp.so
+		//成功后执行安装命令
+		//make install
+		
+	
+	6)安装apr-util, 下载解压apr-util-1.6.0.tar.gz，并进入该目录
+		a)配置信息
+		./configure --prefix=/usr/local/hlb/apr_util --with-apr=/usr/local/hlb/apr  注意必须制定apr否则会提示找不到APR
+		b)编译代码
+			make 
+			在执行make编译 apr_passwd.c 过程中，一直报错找不到crypt(), 
+			需要修改 Makefile 文件line 15 :
+			APRUTIL_LIBS = -lexpat -liconv /usr/local/hlb/apr/lib/libapr-1.la -lcrypt
+			在后面加入参数 -lcrypt 
+			
+			如果还有问题，那么尝试下在代码 apr_passwd.c中添加头文件 #include <unistd.h>
+		
+		c)安装
+			make install
+		
+	7)安装pcre, 下载解压pcre-8.41.zip，并进入该目录
+		./configure
+		make && make install;
+	
+	8)安装 Apache2 
+	
+	
+
+
+

@@ -1,0 +1,258 @@
+
+
+一、安装php7
+
+1. 下载解压 php-7.1.8.tar.gz 并进入解压后目录(命令: tar -zxvf php-7.1.8.tar.gz)
+
+2. 安装依赖库
+	apt-get install libpng-dev
+	apt-get install libjpeg-dev
+	apt-get install curl
+	apt-get install libcurl4-gnutls-dev
+	apt-get install libfreetype6-dev
+	
+3. 安装 mcrypt扩展,一会配置php时要用到(此步骤先跳过吧,如果安装php时报错再重新回到这里安装)
+	1)先安装libmcrypt  
+		https://sourceforge.net/projects/mcrypt/files/Libmcrypt/2.5.8/libmcrypt-2.5.8.tar.gz
+		解压并进入目录 libmcrypt-2.5.8 ，执行命令
+		./configure
+		make && make install
+		
+	2) 下载mhash（安装mcrypt需要此软件包）
+		https://sourceforge.net/projects/mhash/files/mhash/0.9.9.9/mhash-0.9.9.9.tar.gz/
+		解压并进入目录 mhash-0.9.9.9 ，执行命令
+		./configure
+		make && make install
+		
+	2)安装 mcrypt 
+		https://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/
+		解压并进入目录 mcrypt-2.6.8，执行命令
+		ln -s /usr/local/bin/libmcrypt_config /usr/bin/libmcrypt_config  #添加软连接
+		export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH  #添加环境变量
+		./configure
+		make && make install
+		
+4. 创建php用户组合用户
+	groupadd php
+	useradd -r -g php -s /sbin/nologin -M php  
+	注:	-s表示指定用户所用的shell，此处为/sbin/nologin，表示不登录
+		-M表示不创建用户主目录
+
+5. 配置 (下面要写在一行)
+	./configure 
+	--prefix=/usr/local/hlb/php
+	--with-apxs2=/usr/local/hlb/apache2/bin/apxs
+	--with-config-file-path=/usr/local/hlb/php/etc
+	--with-mysql-sock=/tmp/mysql.sock
+	--enable-fpm    	#FastCGI进程管理器
+	--enable-ftp
+	--enable-xml
+	--enable-zip
+	--enable-soap 		#可以用来提供和使用Web services
+	--enable-pcntl 		#进程控制
+	--enable-shmop		#进程间共享变量
+	--enable-shared 	#进程间共享内存
+	--enable-sysvsem		#信号量
+	--enable-sysvmsg		#消息队列
+	--enable-bcmath		#支持大整数计算的扩展
+	--enable-mysqlnd	#Mysql Native驱动
+	--enable-opcache	#使用PHP自带的opcache开启性能加速
+	--enable-session
+	--enable-sockets
+	--enable-mbregex 
+	--enable-mbstring 
+	--enable-gd-native-ttf	
+	--enable-inline-optimization
+	--enable-cli	#支持命令窗口执行php语句
+	--with-gd 		#图形的扩展库
+	--with-curl
+	--with-zlib
+	--with-mhash 	#不可逆向的php加密方式扩展库, 可用于创建校验数值，消息摘要，消息认证码，以及密码等
+	--with-iconv	#编码转换
+	--with-xmlrpc	#远程过程调用,是一种在本地的机器上调用远端机器上的一个过程(方法)的技术
+	--with-gettext	#实现UTF-8国际化多语言(i18n)
+	--with-jpeg-dir 
+	--with-freetype-dir
+	--with-fpm-user=nginx
+	--with-fpm-group=nginx
+	--with-mysqli=mysqlnd	#php-mysql的优化扩展
+	--with-pdo-mysql=mysqlnd
+	--with-openssl
+	--with-mcrypt
+	
+	
+	此过程中可能会提示Cannot find OpenSSL's <evp.h>，那么则安装 openssl：
+	 apt-get install openssl 	   ##安装openssl
+	 apt-get install libssl-dev    ##安装openssl开发库
+	
+6. 安装
+	make 
+	make install 
+
+7. 拷贝配置
+	源码安装包有两个php.ini-xxx文件，一个是产品模式，一个是开发模式。根据需求选择一个改名为php.ini
+	放到安装目录 php/etc/下：
+	cp /usr/local/work/php-7.18/php.ini-development /usr/local/hlb/php/etc/php.ini
+
+8. 修改php目录权限
+	chown -R php:php /usr/local/hlb/php
+	
+9. 将php命令加入环境变量，修改profile文件
+	vim /etc/profile
+	在后面加入如下内容,保存退出
+	PATH=$PATH:/usr/local/hlb/php/bin
+	export PATH
+	
+	
+10. 使/etc/profile里的配置立即生效
+	source /etc/profile
+
+	可以在命令行输入PATH看是否生效：
+	echo $PATH
+	
+	
+	--追加安装
+	注：如果php已安装，还想安装其他的扩展库，可进入解压后的源码目录下的 php-7.1.8/ext/,该目录放置了php的扩展
+	库源码, 举例说明，如安装fileinfo扩展库步骤如下：
+		cd fileinfo
+		/usr/local/hlb/php/bin/phpize 	#生成configure配置文件
+		./configure --with-php-config=/usr/local/hlb/php/bin/php-config
+		make && make install
+		在/usr/local/hlb/php/etc/php.ini 里面加入：
+		extension=fileinfo.so
+	
+	
+	
+	
+	
+	
+	
+二、配置Apache支持PHP7
+	
+1. 修改 apache2 配置文件httpd.conf 并保存退出
+	vim /usr/local/hlb/apache2/conf/httpd.conf
+	
+	找到相应下面位置并添加php：
+	DirectoryIndex index.html  index.php
+	
+	Addtype application/x-httpd-php .php .phtml
+	
+2. 重启apache
+	service httpd restart
+	
+3. 在apache2的web目录下添加php文件，如/usr/local/hlb/apache2/htdocs/phpinfo.php
+	文件内容如下：
+	<?php
+		phpinfo();
+	?>
+4. 浏览器访问url：  http://127.0.0.1:8088/phpinfo.php 
+	页面显示正常则表示配置成功
+	
+	
+	
+	
+三、配置nginx支持PHP7
+
+1. 配置php-fpm (在/usr/local/hlb/php/etc/目录下)
+	php-fpm.conf 是 php-fpm 进程服务的配置文件
+	www.conf 这是 php-fpm 进程服务的扩展配置文件
+
+	cd /usr/local/hlb/php/etc
+	mv php-fpm.conf.default php-fpm.conf
+	mv php-fpm.d/www.conf.default php-fpm.d/www.conf
+	以上相当于是改名字
+
+2. 将php-fpm服务脚本加入到init.d/目录,从源码目录中拷贝
+	cp /usr/local/hlb/php-7.1.8/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm
+
+3. 为php-fpm添加可执行权限, 并加入到系统服务
+	chmod +x /etc/init.d/php-fpm
+
+4. 为php-fpm加入系统服务,设置默认启动等级
+	update-rc.d php-fpm defaults 80 80  #第一个80代表start，第二个80代表stop。
+
+5. 启动php-fpm 
+	service php-fpm start 
+	
+	可能会报错 ERROR: [pool www] cannot get gid for group ‘nobody’，
+	原因：/usr/local/hlb/php/etc/php-fpm.d/www.www.conf line23, 配置的是
+		user = nobody
+		group = nobody
+	那就创建个nobody用户组吧:
+		groupadd nobody
+	重启启动 service php-fpm start 
+	
+	如果中途访问log文件报权限问题，则修改该文件权限吧，比如 /usr/local/hlb/php/logs/debug.log
+	chod 777 debug.log 
+	
+6. 修改 nginx 配置文件nginx.conf
+	vim /usr/local/hlb/nginx/conf/nginx.conf
+
+	把前面的#注释符号去掉，把/script改为$document_root，保存退出
+	location ~ \.php$ {
+		root           html;
+		fastcgi_pass   127.0.0.1:9000;
+		fastcgi_index  index.php;
+		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		include        fastcgi_params;
+	}
+
+7. 测试：
+	在nginx的web目录下添加php文件，如/usr/local/hlb/nginx/html/phpinfo.php, 文件内容为
+	<?php
+	phpinfo();
+	?>
+
+	在内置浏览器上访问URL，如：http://127.0.0.1/phpinfo.php 或者 http://127.0.0.1:80/phpinfo.php
+	页面显示正常，则配置成功。 注:apache的端口已修改为8088
+	
+
+	
+四、测试PHP7操作MySQL
+1. 在web目录下添加php文件，如/usr/local/hlb/apache2/htdocs/mysql.php 或 /usr/local/hlb/nginx/html/mysql.php
+
+	<?php
+	$host = 'localhost';
+	$user = 'root';
+	$pass = 'root';
+	$database = 'mysql';
+	$sql = 'SELECT * FROM user LIMIT 1';
+
+	/*连接MySQLi*/
+	try {
+		$con = mysqli_connect($host, $user, $pass, $database);
+		$result = mysqli_query($con, $sql);
+		//获取数据
+		$data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+		print_r($data);
+		//释放结果集
+		mysqli_free_result($result);
+		mysqli_close($con);
+	} catch (Exception $e) {
+		print "MySQLi Error: " . $e->getMessage() . "<br/>";
+	}
+
+	echo "<hr>";
+
+	/*连接PDO*/
+	try {
+		$dbh = new PDO("mysql:host=$host;dbname=$database", $user, $pass);
+		foreach ($dbh->query($sql) as $row) {
+			print_r($row);
+		}
+		$dbh = null;
+	} catch (PDOException $e) {
+		print "PDO Error: " . $e->getMessage() . "<br/>";
+	}	
+
+2. 访问URL，如：http://127.0.0.1:8088/mysql.php  #文件位于apche目录下
+			 或 http://127.0.0.1/mysql.php   	 #文件位于nginx目录下
+	页面显示正常，则配置成功
+	
+	
+	
+	
+	
+	
+	
+	

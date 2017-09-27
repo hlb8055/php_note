@@ -1,0 +1,85 @@
+
+1.本地安装mysql时设置的账号密码为 root, hlb11612380
+
+一、界面管理工具使用 
+	1)phpMyAdmin
+		这是最常用的MySql界面工具, 安装AppServ时自带安装好的,放在目录 C:\AppServ\www\phpMyAdmin
+		
+		可以单独设置个虚拟域名来直接访问phpMyAdmin：在httpd-vhosts.conf文件中再配置一个域名:
+		<VirtualHost *:8088>
+			ServerAdmin hlb@qq.com
+			DocumentRoot "C:/AppServ/www/phpMyAdmin"
+			ServerName mysql
+			ErrorLog "logs/dummy-host.example.com-error.log"
+			CustomLog "logs/dummy-host.example.com-access.log" common
+		</VirtualHost>		
+		
+		同时修改 C:\Windows\System32\drivers\etc\hosts 在后面添加 
+		127.0.0.1       mysql
+		
+		重启AppServ；
+		在浏览器进入http://mysql:8088/即可打开登录界面,输入用户名和密码即可。(root, hlb11612380)
+		
+		
+	2)navicat 
+	
+		打开工具navicat
+		点 连接 弹出的界面：
+		连接名: 随意填或本地
+		主机名或IP地址：localhost
+		端口:3306
+		用户名：root
+		密码:hlb11612380 或 root
+		
+二、命令行操作
+
+1.登录MySQL: 
+	cmd 里进入mysql.exe目录 C:\AppServ\MySQL\bin， 输入命令
+	mysql -u root -p
+	提示输入密码, 输入后回车即可连接成功mysql
+	
+2. 常用命令
+
+	1)创建/查看数据库
+	mysql> create database 库名;
+	
+	2)查看数据库
+	mysql> show databases;
+	
+	3)使用数据库
+	mysql> use 库名；
+	
+	4)查看数据表
+	mysql> show tables;
+	
+	5)创建数据表
+	mysql> create table tb_session( session_key int auto_increment, 
+									session_data char(112), 
+									session_time int, 
+									primary key(session_key));	
+	
+	6)删除表
+	mysql> drop table tb_session;
+		
+	7)往表中插入一条数据
+	mysql> insert into tb_session values(null, "dd", '2015-6-2012:20:12'); #id自动增加
+	
+	8)修改某一条中的某个字段内容，如
+	mysql> update tb_session set session_data = 'yyyy' where id = 2;
+	
+	9)删除某一条数据
+	mysql> delete from tb_session where id = 2;
+	
+	10)查询
+	select 列名 from 表明 where 条件;
+	
+	
+	11)在linux导入数据表
+		shell命令
+		$ echo 'CREATE DATABASE invo CHARSET=utf8 COLLATE=utf8_unicode_ci' | mysql -u root -p #如果没有数据库则创建
+		$ cat schemas/invo.sql | mysql -u root -p invo		#导入数据表
+	
+	
+	
+	
+	

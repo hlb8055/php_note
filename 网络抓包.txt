@@ -1,0 +1,13 @@
+
+
+linux 下可以通过命令  tcpdump |grep 9501 来抓取tcp包
+
+windows安装软件 Wireshark 来抓包，
+
+常用过滤规则： 
+http 		//过滤HTTP的协议
+tcp.port==9501  //tcp端口为9501的包
+ip.src==10.103.240.195
+ip.src==10.103.240.195 and http 
+ip.src==10.103.240.195 and tcp
+http.request.method=="POST"     //过滤post包

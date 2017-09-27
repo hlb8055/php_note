@@ -1,0 +1,70 @@
+
+一、安装
+1. 下载Appserv :  https://www.appserv.org/ 
+
+2. 安装时如果碰到设置 Apache Http端口尽量不要设置为80, 因为其他软件如迅雷可能占用，可设置为其他端口如8088，
+   或者安装完之后再修改端口：
+   C:\AppServ\Apache24\conf\httpd.conf 
+   
+   其中的
+    Listen 80   ->     8088
+	ServerName localhost(这里的localhost也有可能是其他的值，安装时配置) :80  -> 8088
+	
+    重启apache
+
+3. 修改电脑 C:\Windows\System32\drivers\etc\hosts 文件，
+	确保这项内容没有被注释掉(如果前面有# 则需要把它删掉):
+	127.0.0.1	localhost
+
+4.	在网页上测试 http://localhost:8088/
+	如果出现有数据的AppServ页面则表示安装成功. 注意，如果电脑之前已经安装过，则需要卸载后再重装。
+	
+
+	注，本次设置了mysql账号密码为 root, hlb11612380
+	
+二、配置虚拟域名
+1.	修改hosts文件，添加虚拟域名
+	127.0.0.1	localhost
+	127.0.0.1	www.hlbtest.com
+
+2.	修改C:\AppServ\Apache24\conf\httpd.conf 
+	开启apache对虚拟主机的支持，找到 “Include conf/extra/httpd-vhosts.conf  如果前面有# 则需要把它删掉
+
+3.	打开 C:\AppServ\Apache24\conf\extra\httpd-vhosts.conf 
+
+	注意！注意！注意！一定按照下面操作！
+	1)把第一个VirtualHost中的DocumentRoot改成appserv安装www的默认路径(我的是 "C:/AppServ/www")
+		<VirtualHost _default_:80>
+		DocumentRoot "C:/AppServ/www"
+		#ServerName www.example.com:80
+		</VirtualHost>	
+
+	2)修改两条中的VirtualHost给自己用（也可以添加）,注意端口号
+		ServerAdmin：管理员邮箱（随意）
+		DocumentRoot：网站的根目录,如果新目录记得确保路径存在哦
+		ServerName：网站域名 
+		ServerAlias：网站的网址
+		
+		如下：
+		##################### add by hlb ##############################
+		<VirtualHost *:8088>
+			ServerAdmin hlb@qq.com
+			DocumentRoot "C:/AppServ/www"
+			ServerName hlbtest.com
+			ServerAlias www.hlbtest.com
+			ErrorLog "logs/dummy-host.example.com-error.log"
+			CustomLog "logs/dummy-host.example.com-access.log" common
+		</VirtualHost>		
+	
+	3)配置虚拟域名之后,localhost 失效的问题, 此时在后面再添加一条
+		<VirtualHost *:8088>
+			ServerAdmin hlb@qq.com
+			DocumentRoot "C:/AppServ/www/hlb"
+			ServerName localhost
+			ErrorLog "logs/dummy-host.example.com-error.log"
+			CustomLog "logs/dummy-host.example.com-access.log" common
+		</VirtualHost> 
+
+4.	在网页上测试 http://www.hlbtest.com:8088/ 和 http://localhost:8088/
+
+

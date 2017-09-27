@@ -1,0 +1,41 @@
+
+linux平台:
+
+1)#停服务 
+	/etc/init.d/mysql.server stop  #停服务
+	
+2)跳过密码验证
+	/usr/local/mysql/bin/mysqld_sale --skip-grant-tables
+	此时屏幕会假死，没反应，那么就打开另一个控制台 , Ctrl + Alt + (F2~F6) ,在新命令窗口中继续如下操作
+
+3)无密码登录(此时目录为 /usr/local/mysql/bin/)
+	mysql -u root  #会进入 mysql> 命令行模式
+
+4)授权
+	mysql>grant all privileges on *.* to 'root'@'localhost' identified by 'root' with grant option;
+	注：
+		账户名为:	root'@'localhost
+		密码为: 	root
+		可以换别的密码
+		
+	问题一：发现无密码条件下，没有授权的写权限
+	The MySQL server is running with the --skip-grant-tables option so it cannot execute this statement
+	
+	解决方法：
+	mysql>set global read_only=0;	//（关掉新主库的只读属性）
+	mysql>flush privileges;
+	再次执行第四步授权语句：
+	grant all privileges on *.* to 'root'@'localhost' identified by 'root' with grant option;
+
+	mysql>set global read_only=1;//(读写属性)
+	mysql>flush privileges;
+	（注意刷新是必须项）	
+
+5)重启数据库
+	mysql>exit; #退出mysql命令行模式回到shell命令行模式
+	/etc/init.d/mysql.server restart
+	如果提示无权限,则切换到root账号来重启mysql
+	su root
+	/etc/init.d/mysql.server restart
+
+

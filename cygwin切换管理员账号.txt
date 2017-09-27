@@ -1,0 +1,34 @@
+
+1.由于Cgywin提高了安全性能，没有导入window用户的信息，而是默认以Administrator的普通用户来登陆的，
+  所以我们需要导入windows的用户信息来自己创建passwd文件：
+
+在cygwin命令窗口执行：
+1)创建passwd文件
+	$mkpasswd -l >/etc/passwd
+2)	mkgroup  -l > /etc/group
+
+3)修改/etc/passwd文件，将
+	Administrator:unused:501:513:U-HUANGLIBO-PC\Administrator,S-1-5-21-2223158394-3153588127-2482722559-500:/home/Administrator:/bin/bash
+	修改为
+	root:unused:0:0:U-HUANGLIBO-PC\root,S-1-5-21-2223158394-3153588127-2482722559-500:/home/root:/bin/bash
+
+
+4)在/home目录下创建root目录
+
+5)关闭控制台，重新登陆，就会以root用户登陆，修改成功。
+
+如果还不成功，那么原因是新的登陆用户信息不在/etc/passwd和/etc/group中导致的：
+执行命令追加：
+mkpasswd -c >>/etc/passwd; 
+mkgroup -c >>/etc/group
+打开passwd文件发现多了一行：
+huanglibo:unused:501:513:U-DIANSHITECH\huanglibo,S-1-5-21-2455600676-573727752-1514779990-1696:/home/huanglibo:/bin/bash
+那么把501:513修改为0:0即可
+huanglibo:unused:0:0:U-DIANSHITECH\huanglibo,S-1-5-21-2455600676-573727752-1514779990-1696:/home/huanglibo:/bin/bash
+
+即可修复。
+
+
+如果在cywin目录下创建删除目录文件提示没有权限，那么关掉当前窗口,
+右击c:\Cygwin64\Cygwin.bat，以管理员身份运行。
+一旦中间又提示同样的权限问题，重新以管理员打开命令窗口再尝试下

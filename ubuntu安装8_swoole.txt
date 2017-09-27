@@ -1,0 +1,40 @@
+
+
+1. 下载 swoole-src-master.zip, 解压并进入解压目录, 执行命令：
+
+	/usr/local/hlb/php/bin/phpize   #主要是生成configure文件
+	
+	./configure --with-php-config=/usr/local/hlb/php/bin/php-config
+				--enable-swoole
+	make 
+	make install
+
+2. 在/usr/local/hlb/php/etc/php.ini 里面加入：
+	extension=swoole.so   	#php.ini文件也是藏匿在lib、etc、bin这仨之一，装的时候多找找
+	
+3. 重启php-fpm
+	service php-fpm restart
+	
+4. 查看是否安装成功
+	http://127.0.0.1:8088/phpinfo.php  		#文件位于apache2目录下
+	或 执行命令  
+	php -m  此命令有时并一定准确
+	
+	
+5. 在php中配置 swoole 如下：
+
+    //长连接配置
+    'swoole' => [
+        'host'           => '192.168.216.131',//swoole服务器地址,填写真实的外部地址(linux主机地址), 不是127.0.0.1
+        'port'           => 9501,        //swoole服务端口
+        'server_setting' => [
+            'worker_num'        => 4,//启动的worker进程数, 官方建议设置为CPU的1-4倍最合理
+            'task_worker_num'   => 4, //配置task进程的数量，配置此参数后将会启用task功能
+            'daemonize'         => true, //守护进程化, 标准输入和输出会被重定向到 log_file 
+            'dispatch_mode'     => 2, //根据连接的文件描述符分配worker。这样可以保证同一个连接发来的数据只会被同一个worker处理 
+            'log_file'          => APP_PATH . '/logs/swoole.log', //指定swoole错误日志文件
+            'max_request'       => 2000,// 防止 PHP 内存溢出, 一个工作进程处理 X 次任务后自动重启 (注: 0,不自动重启)
+        ]
+    ],
+	
+

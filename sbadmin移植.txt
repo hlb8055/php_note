@@ -1,0 +1,9 @@
+
+1. phalcon项目下的 app/views/index.phtml 必须删掉,
+   因为sbadmin布局全部都用同一个layout文件: app/views/layout/admin.phtml
+   否则会导致界面显示点击无反应,页面也无法适应屏幕
+   
+
+
+
+

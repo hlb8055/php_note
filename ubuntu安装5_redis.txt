@@ -1,0 +1,118 @@
+
+
+一、安装Redis
+
+下载页面：http://redis.io/download
+
+1. 创建redis用户组合用户
+	groupadd redis
+	useradd -r -g redis -s /sbin/nologin -M redis
+
+2. 解压redis-3.2.10.tar.gz, 并进入解压后目录,编译安装
+	cd redis-3.2.10/
+
+	make PREFIX=/usr/local/hlb/redis install
+	
+3. 创建redis文件目录
+	mkdir -p /usr/local/hlb/redis/data
+	mkdir -p /usr/local/hlb/redis/etc
+	mkdir -p /var/run/redis
+	mkdir -p /var/log/redis
+
+4. 将配置文件放入redis/etc/目录
+	cp redis.conf /usr/local/hlb/redis/etc/
+	
+5. 修改redis配置文件redis.conf
+	vim /usr/local/hlb/redis/etc/redis.conf
+	
+	修改为下面内容，保存退出
+		tcp-backlog 128                 　	#tcp队列长度，CentOS系统默认为128，此值不应该大于操作系统的该值
+		daemonize yes                 　　	#改为yes，保证redis可以后台运行
+		pidfile /var/run/redis/redis.pid  	#redis pid
+		logfile "/var/log/redis/redis.log"	#redis日志
+		dir /usr/local/hlb/redis/data/      #redis数据存储目录
+
+		#------ 可选配置 ------
+		#slaveof 192.168.1.66 6379 　　　　 #主从复制，在副机上配置，例：IP 192.168.1.66，端口 6379
+		#save 60 10000                     	#快照，例：60s内10000个更改就保存
+		#appendonly yes                    	#AOF持久化	
+
+6. 修改redis目录权限
+	chown -R redis:redis /usr/local/hlb/redis
+	chown -R redis:redis /var/run/redis
+	chown -R redis:redis /var/log/redis
+
+7. 将redis命令加入环境变量，修改profile文件, 
+	vim /etc/profile
+	加入
+	PATH=$PATH:/usr/local/hlb/redis/bin
+	
+	使/etc/profile里的配置立即生效
+	source /etc/profile
+	
+8. 新建redis服务脚本加入到init.d目录,文件名为 redis
+	1)脚本内容已修改好，路径为: PHP笔记/redis，将它拷贝到/etc/init.d/目录下
+	
+	2)为 redis 添加可执行权限
+		chmod +x /etc/init.d/redis
+		
+	3)将 redis 加入系统服务, 默认启动等级
+		update-rc.d redis defaults 80 80  #第一个80代表start，第二个80代表stop。
+	
+	4)启动 redis
+		service redis start
+		
+	注：可能会报错 env: /etc/init.d/redis: no such file or directory 
+		这是因为该文件是在windwos编辑, 换行符与unix不同引起的。可以在linux下执行如下命令解决
+		dos2unix /etc/init.d/redis
+	
+	
+二、PHP7安装Redis拓展
+
+1. 下载zip源码zip包,默认git下来的是php5版本哦
+	php5:   https://github.com/phpredis/phpredis
+	php7；  https://github.com/phpredis/phpredis/archive/php7.zip
+
+2. 解压并进入解压目录, 执行命令：
+
+	/usr/local/hlb/php/bin/phpize
+	
+	./configure --with-php-config=/usr/local/hlb/php/bin/php-config
+	注意这个php-config文件有的版本是在php/lib/php-config，装的时候多找找
+	
+	make && make install
+	
+3. 在/usr/local/hlb/php/etc/php.ini 里面加入：
+	extension=redis.so   php.ini文件也是藏匿在lib、etc、bin这仨之一，装的时候多找找
+
+4. 重启Apache或php-fpm
+	service httpd restart
+	service php-fpm restart
+
+5. 在web目录下添加php文件，如/usr/local/hlb/apache2/htdocs/redis.php 或 /usr/local/hlb/nginx/html/redis.php
+	<?php
+	$redis = new Redis();
+	$redis->connect('127.0.0.1', 6379);
+	$redis->set('mykey','myval');
+	print_r($redis->get('mykey'));
+	?>
+	
+6. 访问URL，如：http://127.0.0.1:8088/redis.php  #文件位于apche目录下
+			 或 http://127.0.0.1/redis.php   	 #文件位于nginx目录下
+	页面显示正常，则配置成功
+	
+	
+7. 也可以在 cli 模式下测试
+	shell命令窗口输入 redis-cli ,回车即可进入, 输入常用的redis命令，如 select 等
+	注：redis 默认支持0~15 共16个数据库,超出使用 select 则会报错
+
+详细操作请参考文档  <PHP对redis操作详解.txt>
+
+
+
+
+
+
+
+
+	

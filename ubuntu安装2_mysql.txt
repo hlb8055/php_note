@@ -1,0 +1,129 @@
+
+先按照<ubuntu安装1_apache.txt>配置好环境再进行此操作
+
+
+到官网 http://dev.MySQL.com/downloads/mysql/ 下载
+	操作系统：Linux_Generic 
+	操作系统版本：Linux_generic x86_6
+	所对应的二进制安装包 mysql-5.7.19-linux-glibc2.12-x86_64.tar.gz
+
+
+当前在root账号下操作,按照官网文档流程：
+
+0. 添加用户和用户组
+	groupadd mysql
+	useradd -r -g mysql -s /bin/false mysql
+
+1. 进入/usr/local/下执行解压操作 (注意必须解压缩到/usr/local/下)
+	cd /usr/local 
+	tar zxvf /usr/local/work/mysql-5.7.19-linux-glibc2.12-x86_64.tar.gz
+	
+2. 对/usr/local/下的 mysql-5.7.19-linux-glibc2.12-x86_64 解压包做软连接(相当于windows下的快捷方式)
+	ln -s /usr/local/mysql-5.7.19-linux-glibc2.12-x86_64 mysql
+	可以看到在当前目录下生成 mysql 文件夹
+	
+3. 进入mysql目录,创建目录(用来存放秘钥，配置数据)
+	cd mysql
+	mkdir mysql-files
+	chmod 750 mysql-files
+
+4. 设置mysql目录的拥有者和所属的用户组,注意命令后面有个 .   设置前和设置后可通过命令 ls -l 来查看差别
+	chown -R mysql .
+	chgrp -R mysql .
+
+5. 执行安装脚本 (当前目录为 /usr/local/mysql),创建秘钥,注意不同php版本选择不同命令:
+	bin/mysql_install_db --user=mysql    # MySQL 5.7.5
+	bin/mysqld --initialize --user=mysql # MySQL 5.7.6 and up
+	bin/mysql_ssl_rsa_setup              # MySQL 5.7.6 and up	
+	
+	注：可能会提示缺少libaio1库, 直接安装即可 sudo apt-get install libaio1
+	
+6. 再次设置权限 (当前目录为 /usr/local/mysql)
+	chown -R root .
+	chown -R mysql data mysql-files  #必须确保这两个目录为用户mysql所拥有 
+	
+7. 启动
+	bin/mysqld_safe --user=mysql &
+	
+8. 拷贝配置文件
+	cp support-files/mysql.server /etc/init.d/mysql.server 	#复制到系统开机启动初始化目录
+	
+9. 配置环境变量 
+	环境变量文件有两个文件可选：“/etc/profile”和用户主目录下的“.bash_profile”，“/etc/profile”对系统里所有用户都有效，
+	用户主目录下的“.bash_profile”只对这个用户有效。推荐修改 /etc/profile
+	vim /etc/profile
+	在文件后面添加两行:
+		PATH=$PATH:/usr/local/mysql/bin
+		export PATH
+	保存退出.
+	执行命令 source /etc/profile 使得修改生效,最后通过 echo $PATH 来查看是否添加成功	
+	
+	
+10. 测试运行 (当前目录为 /usr/local/mysql)
+	bin/mysqladmin version
+	bin/mysqladmin variables
+	 
+	如果此时提示登录不上,并且已经知道密码的时候可通过如下命令
+		bin/mysqladmin -u root -p version 之后会提示输入密码
+	
+	注：如果忘记密码,那么按<root账号登录不上mysql.txt>步骤来解决
+
+	测试可正常关闭
+		bin/mysqladmin -u root -p shutdown
+	测试可正常启动
+		bin/mysqld_safe --user=mysql &
+	查看当前已有的数据库
+		bin/mysqlshow -u root -p
+		
+11. 让mysql在系统开机的时候自动运行
+	update-rc.d -f mysql.server defaults  #因为mysql.server上面已拷贝到/etc/init.d/下,所以可识别
+	如果不想让mysql开机自己启动则remove掉：
+	update-rc.d -f mysql.server remove
+	
+12. 给mysql命令添加快捷方式吧，这样就不用每次都写路径
+	ln -s /usr/local/mysql/bin/mysql /usr/local/bin/mysql
+	
+	这样以后就可以快捷操作了，如：
+	mysql -u root -p 
+	
+	
+12. 常用命令
+
+	启动/停止/重启
+	/etc/init.d/mysqld.server start|stop|restart
+	
+	查看mysql是否在运行
+	/etc/init.d/mysqld.server status
+	
+	
+	
+	
+	
+
+/*	以下步骤先不处理:
+11. 测试成功后就可以看到在 /tmp/目录下生成 mysql.sock 文件,所以就可以将mysql的配置文件放到系统启动过程中,
+	由于5.7.19版本的mysql在目录support-files下已经没有my_default.cnf, 所以在网上找了一个my.cnf,
+	放到/etc/my.cnf ,
+	但是很多选项已经再新版本中被移除,比如 --basedir --datadir等，所以只需要设置相关的项即可，其他系统默认即可.
+
+
+
+10. 执行命令 mysql_secure_installation。
+	会执行几个设置：
+	  a)为root用户设置密码
+	  b)删除匿名账号
+	  c)取消root用户远程登录
+	  d)删除test库和对test库的访问权限
+	  e)刷新授权表使修改生效
+	通过这几项的设置能够提高mysql库的安全。建议生产环境中mysql安装这完成后一定要运行一次mysql_secure_installation
+*/
+	
+
+
+
+
+
+
+
+
+	

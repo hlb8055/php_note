@@ -1,0 +1,4 @@
+
+在windwos编辑的文档，因为换行符与unix不同，所以在linux运行时会报错，
+可以在linux下执行如下命令解决
+	sudo dos2unix /etc/init.d/nginx

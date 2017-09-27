@@ -1,0 +1,8 @@
+
+1) 当前http服务器使用nginx,那么查看它的access log, 一般在 nginx 安装目录下的logs下, 如果不知道，可打开它的配置文件
+	nginx.conf 来查看 access_log 路径配置
+	
+2) 同理,当http服务器使用 apache时 也可以查看它的access log路径配置, 如果不知道，可打开它的配置文件 httpd.conf来查看;
+
+
+

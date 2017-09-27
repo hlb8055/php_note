@@ -1,0 +1,146 @@
+
+1. vmware 安装好ubuntu 
+
+2. 切换到root账号，否则以后的安装很多会出现很多权限问题：
+	可通过设置root密码后登陆:
+	sudo passwd root #这个命令是给root用户设定密码
+	
+	su root #切换到root用户
+	
+	注:
+	在非root账号下，创建文件/目录时提示无权限,可通过如下命令来获得权限
+	sudo chmod 777 目录
+	然后cd进去目录,就可以创建了,如 
+	mkdir 新目录
+
+3. windows拷贝文件到虚拟机，请使用 WinSCP
+
+
+	
+4. 切换命令窗口和UI界面：Ctrl+Alt+F2 和 Ctrl+Alt+F7
+
+
+
+
+
+
+下面配置服务器
+
+
+1. 安装GCC
+	gcc --version 
+	如果没有安装则执行命令
+	sudo apt-get  install  build-essential
+
+2. 安装 autoconf automake libtool
+	sudo apt-get install autoconf automake libtool
+	
+3, 安装python (必须安装python-dev 这个版本,否则其他版本的python，在其他应用中会提示找不到python.h)
+	sudo apt-get install python-dev
+	安装完成后，　可以用下面的命令进行确认
+	python --version
+	
+4.	安装 libxml2, 否则会报缺少 xml parser 等问题
+	sudo apt-get install libxml2-dev
+	
+
+5. 安装apr, 下载解压apr-1.6.2.tar.gz，并进入该目录
+	1) ./configure --prefix=/usr/local/hlb/apr --enable-threads 
+		此过程可能会报错 rm cannot remove libtoolT...
+		那么打开并编辑 configure 文件, line3050:
+		将 RM = '$RM' 修改为 RM = '$RM -f' 即可;
+	
+	2 make && make install
+	
+6. 安装apr-util, 下载解压apr-util-1.6.0.tar.gz，并进入该目录
+	a)配置信息
+	./configure --prefix=/usr/local/hlb/apr_util --with-apr=/usr/local/hlb/apr  注意必须制定apr否则会提示找不到APR
+	b)编译代码
+		make 
+		在执行make编译 apr_passwd.c 过程中，一直报错找不到crypt(), 
+		需要修改 Makefile 文件line 15 :
+		APRUTIL_LIBS = -lexpat -liconv /usr/local/hlb/apr/lib/libapr-1.la -lcrypt
+		在后面加入参数 -lcrypt 
+		
+		如果还有问题，那么尝试下在代码 apr_passwd.c中添加头文件 #include <unistd.h>
+	
+	c)安装
+		make install	
+	
+7. 安装pcre, 下载解压pcre-8.41.zip，并进入该目录
+	./configure
+	make && make install;	
+	
+8. 安装apache2, 下载解压httpd-2.4.27.tar.gz，并进入该目录 (http://www.apachelounge.com/download/)
+	0)创建apache用户组和用户
+		groupadd apache
+		useradd -r -g apache -s /sbin/nologin -M apache
+
+
+	1)安装
+		./configure --prefix=/usr/local/hlb/apache2  
+					--enable-so 
+					--enable-rewrite 
+					--with-apr-util=/usr/local/hlb/apr-util 
+					--with-apr=/usr/local/hlb/apr 
+					--with-pcre=/usr/local/hlb/pcre
+		
+		make && make install
+	
+	2)添加目录权限
+		chown -R apache:apache /usr/local/hlb/apache2
+		
+	3)查看版本命令
+		/usr/local/hlb/apache2/bin/httpd -v
+		
+	4)查看apache的配置
+		/usr/local/hlb/apache2/bin/apachectl -V
+		
+	5)加入系统自动启动项
+	
+		cp /usr/local/hlb/apache2/bin/apachectl /etc/init.d/httpd  #拷贝服务器启动脚本，并命名为httpd
+		
+		update-rc.d httpd defaults 80 80 
+		
+		注:
+		linux运行级别等级：
+			0        	系统停机状态
+			1        	单用户模式，只准许root用户对系统进系维护
+			2~5 		多用户模式（其中3为字符界面、5为图形界面）
+			6         	重启启动
+		
+		update-rc.d是一个Perl脚本，是用来自动升级System V类型初始化脚本，简单来说就是哪些东西是你想要在系统
+		引导初始化的时候运行的，哪些是希望在关机或重启时候停止的，都可以用它来帮你设置。这些脚本的连接位于
+		/etc/rc*.d/下（*代表0～6），对应脚本位于/etc/init.d/
+		具体命令格式如下：
+			设置启动项： update-rc.d <serviceName> start <order> <runlevel>  
+			设置停止项： update-rc.d <serviceName> stop <order> <runlevel>
+			删除启动项： update-rc.d -f <serviceName> remove
+		举例：
+			sudo update-rc.d httpd start 80 2 3 4 5 .
+			sudo update-rc.d httpd start 80 0 1 6 .
+			注意后面有 . 
+		我们也可以使用defaults参数来向运行级别2、3、4、5启动服务，也就是start，并同时向运行级别0、1、6添加关
+		闭命令，即stop。输入命令
+			update-rc.d httpd defaults 80 80  #第一个80代表start，第二个80代表stop。
+	
+	6)启动和停止apache
+		service httpd start  
+		service httpd restart 
+		service httpd stop 
+	
+	7)查看apache是否已在运行，通过查看进程命令：
+		ps -ef|grep httpd
+	
+	8)配置域名
+		修改 /usr/local/hlb/apache2/conf/httpd.conf 
+		ServerName 127.0.0.1:80
+		在ubuntu中打开浏览器输入 http://127.0.0.1 后页面显示 It works! 表示正常工作
+	
+		#如果要安装nginx，为防止端口冲突，这里改为其他端口
+		Listen 8088
+		ServerName 127.0.0.1
+		在ubuntu中打开浏览器输入 http://127.0.0.1:8088 后页面显示 It works! 表示正常工作
+		
+		
+	

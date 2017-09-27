@@ -1,0 +1,39 @@
+
+此工具不太好用啊，暂时别装了
+
+
+
+一、安装
+
+1. 到官网下载源码包 xdebug-master.zip, 解压并进入解压目录, 执行命令：
+
+	/usr/local/hlb/php/bin/phpize   #主要是生成configure文件
+	
+	./configure --with-php-config=/usr/local/hlb/php/bin/php-config
+				--enable_xdebug
+	make 
+	make install
+	
+	在当前目录modules下生成 xdebug.so, 将其拷贝到php目录下:
+	cp xdebug.so /usr/local/hlb/php/xdebug/
+	
+	
+	
+2. 修改/usr/local/hlb/php/etc/php.ini 在里面加入：
+	[Xdebug] 
+	zend_extension ="/usr/local/hlb/php/xdebug/xdebug.so" 
+	xdebug.profiler_enable=on  
+	xdebug.trace_output_dir="/usr/local/hlb/php/xdebug/" 
+	xdebug.profiler_output_dir="/usr/local/hlb/php/xdebug/" 
+	
+3. 重启php-fpm 和 apache2
+	service php-fpm restart
+	service httpd restart  //用于下一步骤查看phpino()
+	
+4. 查看是否安装成功
+	http://127.0.0.1:8088/phpinfo.php  		#文件位于apache2目录下
+
+	
+二、使用
+
+
