@@ -9,7 +9,7 @@ linux平台:
 	此时屏幕会假死，没反应，那么就打开另一个控制台 , Ctrl + Alt + (F2~F6) ,在新命令窗口中继续如下操作
 
 3)无密码登录(此时目录为 /usr/local/mysql/bin/)
-	mysql -u root  #会进入 mysql> 命令行模式
+	./mysql -u root  #会进入 mysql> 命令行模式
 
 4)授权
 	mysql>grant all privileges on *.* to 'root'@'localhost' identified by 'root' with grant option;

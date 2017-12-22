@@ -38,10 +38,10 @@
 	注:	-s表示指定用户所用的shell，此处为/sbin/nologin，表示不登录
 		-M表示不创建用户主目录
 
-5. 配置 (下面要写在一行)
+5. 配置 (下面要写在一行)此时在php解压目录
 	./configure 
 	--prefix=/usr/local/hlb/php
-	--with-apxs2=/usr/local/hlb/apache2/bin/apxs
+	--with-apxs2=/usr/local/hlb/apache2/bin/apxs #如果没有安装apache则忽略此项
 	--with-config-file-path=/usr/local/hlb/php/etc
 	--with-mysql-sock=/tmp/mysql.sock
 	--enable-fpm    	#FastCGI进程管理器
@@ -188,7 +188,7 @@
 6. 修改 nginx 配置文件nginx.conf
 	vim /usr/local/hlb/nginx/conf/nginx.conf
 
-	把前面的#注释符号去掉，把/script改为$document_root，保存退出
+	把前面的#注释符号去掉，把 /script 改为 $document_root，保存退出
 	location ~ \.php$ {
 		root           html;
 		fastcgi_pass   127.0.0.1:9000;
@@ -197,6 +197,10 @@
 		include        fastcgi_params;
 	}
 
+	重启 nginx 
+	service nginx stop
+	service nginx start 
+	
 7. 测试：
 	在nginx的web目录下添加php文件，如/usr/local/hlb/nginx/html/phpinfo.php, 文件内容为
 	<?php
@@ -211,45 +215,46 @@
 四、测试PHP7操作MySQL
 1. 在web目录下添加php文件，如/usr/local/hlb/apache2/htdocs/mysql.php 或 /usr/local/hlb/nginx/html/mysql.php
 
-	<?php
-	$host = 'localhost';
-	$user = 'root';
-	$pass = 'root';
-	$database = 'mysql';
-	$sql = 'SELECT * FROM user LIMIT 1';
+<?php
+$host = 'localhost';
+$user = 'root';
+$pass = 'root';
+$database = 'mysql';
+$sql = 'SELECT * FROM user LIMIT 1';
 
-	/*连接MySQLi*/
-	try {
-		$con = mysqli_connect($host, $user, $pass, $database);
-		$result = mysqli_query($con, $sql);
-		//获取数据
-		$data = mysqli_fetch_all($result, MYSQLI_ASSOC);
-		print_r($data);
-		//释放结果集
-		mysqli_free_result($result);
-		mysqli_close($con);
-	} catch (Exception $e) {
-		print "MySQLi Error: " . $e->getMessage() . "<br/>";
+/*连接MySQLi*/
+try {
+	$con = mysqli_connect($host, $user, $pass, $database);
+	$result = mysqli_query($con, $sql);
+	//获取数据
+	$data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+	print_r($data);
+	//释放结果集
+	mysqli_free_result($result);
+	mysqli_close($con);
+} catch (Exception $e) {
+	print "MySQLi Error: " . $e->getMessage() . "<br/>";
+}
+
+echo "<hr>";
+
+/*连接PDO*/
+try {
+	$dbh = new PDO("mysql:host=$host;dbname=$database", $user, $pass);
+	foreach ($dbh->query($sql) as $row) {
+		print_r($row);
 	}
-
-	echo "<hr>";
-
-	/*连接PDO*/
-	try {
-		$dbh = new PDO("mysql:host=$host;dbname=$database", $user, $pass);
-		foreach ($dbh->query($sql) as $row) {
-			print_r($row);
-		}
-		$dbh = null;
-	} catch (PDOException $e) {
-		print "PDO Error: " . $e->getMessage() . "<br/>";
-	}	
+	$dbh = null;
+} catch (PDOException $e) {
+	print "PDO Error: " . $e->getMessage() . "<br/>";
+}	
 
 2. 访问URL，如：http://127.0.0.1:8088/mysql.php  #文件位于apche目录下
 			 或 http://127.0.0.1/mysql.php   	 #文件位于nginx目录下
 	页面显示正常，则配置成功
 	
-	
+	如果提示找不到 /tmp/mysql.sock 
+	先确认 mysql 是否已启动
 	
 	
 	

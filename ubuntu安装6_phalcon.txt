@@ -31,7 +31,8 @@
 	
 5. nginx配置：
 	如果安装了nginx, 需要配置root路径
-
+	vim /usr/local/hlb/nginx/conf/nginx.conf
+	
   server
   {
 	  listen 80 default_server;

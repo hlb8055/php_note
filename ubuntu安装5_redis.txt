@@ -73,7 +73,7 @@
 	php5:   https://github.com/phpredis/phpredis
 	php7；  https://github.com/phpredis/phpredis/archive/php7.zip
 
-2. 解压并进入解压目录, 执行命令：
+2. 解压phpredis-php7.zip 并且进入解压目录, 执行命令：
 
 	/usr/local/hlb/php/bin/phpize
 	

@@ -13,14 +13,7 @@
 	apt-get install libssl-dev 
 	
 3. 可通过./configure --help查看编译配置参数,下列参数要写在一行中
-	./configure 
-	--prefix=/usr/local/hlb/nginx
-	--modules-path=/usr/local/hlb/nginx/modules
-	--with-http_ssl_module
-	--pid-path=/usr/local/hlb/nginx/nginx.pid
-	--user=nginx
-	--group=nginx
-	--with-http-stub_status_module #用于监控nginx状态
+	./configure --prefix=/usr/local/hlb/nginx --modules-path=/usr/local/hlb/nginx/modules --with-http_ssl_module --pid-path=/usr/local/hlb/nginx/nginx.pid --user=nginx --group=nginx --with-http_stub_status_module
 	
 	此过程可能提示未安装pcre， 则先安装：
 	apt-get install libpcre3 libpcre3-dev

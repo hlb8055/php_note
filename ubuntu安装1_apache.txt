@@ -1,5 +1,9 @@
 
 1. vmware 安装好ubuntu 
+	我使用最新的vmware安装ubuntu-14.04.3-desktop-amd64.iso时一直黑屏无反应。
+	后来下载了 VMware-Workstation-12.5.0-4352439精简官方中文安装注册版 才可安装成功,
+	对应的注册码为 VY1DU-2VXDH-08DVQ-PXZQZ-P2KV8
+
 
 2. 切换到root账号，否则以后的安装很多会出现很多权限问题：
 	可通过设置root密码后登陆:
@@ -13,12 +17,12 @@
 	然后cd进去目录,就可以创建了,如 
 	mkdir 新目录
 
-3. windows拷贝文件到虚拟机，请使用 WinSCP
+3. windows拷贝文件到虚拟机，请使用 WinSCP ，参考<ubuntu和windows传文件.txt>
 
 
 	
 4. 切换命令窗口和UI界面：Ctrl+Alt+F2 和 Ctrl+Alt+F7
-
+	一般使用 xshell工具来在命令窗口调试开发,参考  <ubuntu使用 Xshell 来编辑调试.txt>
 
 
 
@@ -42,6 +46,11 @@
 	
 4.	安装 libxml2, 否则会报缺少 xml parser 等问题
 	sudo apt-get install libxml2-dev
+	
+5. 安装pcre
+	apt-get install libpcre3 libpcre3-dev
+
+	--------------如果不安装apache，以下部分跳过--------------------------
 	
 
 5. 安装apr, 下载解压apr-1.6.2.tar.gz，并进入该目录
@@ -67,9 +76,6 @@
 	c)安装
 		make install	
 	
-7. 安装pcre, 下载解压pcre-8.41.zip，并进入该目录
-	./configure
-	make && make install;	
 	
 8. 安装apache2, 下载解压httpd-2.4.27.tar.gz，并进入该目录 (http://www.apachelounge.com/download/)
 	0)创建apache用户组和用户
