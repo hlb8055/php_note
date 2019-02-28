@@ -11,3 +11,18 @@
 	4)用户名 和 密码 为登录linux主机的账号和密码, 如果root登不上可尝试其他账号.
 	
 	5)进去后就可以看到windows和linux文件目录结构了，就可以进行文件的相互拷贝了。
+	
+	
+3. 有时非root账号上传文件时会提示权限不足,此时就需要以root账号登录,具体如下：
+	1)首先需要在ubuntu上设置 root 密码,并切换到root账号上
+		sudo passwd root
+		根据提示设置密码, 成功后切换到 root 账号 ：
+		su root 
+	
+	2)修改 /etc/ssh/sshd_config 文件
+		注释掉 “PermitRootLogin without-password”，添加“PermitRootLogin yes”
+		
+	3)重启 ssh  服务
+		service ssh restart
+	
+	操作完成后就可以通过 root 账号登入 winscp 了
