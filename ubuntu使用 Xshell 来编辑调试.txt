@@ -5,9 +5,13 @@
 	可通过如下命令查看是否已安装
 		dpkg -l | grep ssh
 		
-	一般 linux 默认值只安装了ssh-client, 还需要安装 ssh-server, (apt-get install ssh)
-	安装好后重启 ssh：
-	/etc/init.d/ssh restart
+	一般 linux 默认值只安装了ssh-client, 还需要安装 ssh-server, 
+	sudo apt-get install openssh-server
+	
+	安装完后查看ssh服务是否启动：
+	sudo ps -e |grep ssh
+	如果有sshd,说明ssh服务已经启动；
+	如果没有启动，输入"sudo service ssh start
 	
 2. 创建新的会话
 	1)会话协议 SSH

@@ -31,6 +31,9 @@
 下面配置服务器
 
 
+0. 同步环境
+	sudo apt-get update
+
 1. 安装GCC
 	gcc --version 
 	如果没有安装则执行命令
@@ -39,7 +42,9 @@
 2. 安装 autoconf automake libtool
 	sudo apt-get install autoconf automake libtool
 	
-3, 安装python (必须安装python-dev 这个版本,否则其他版本的python，在其他应用中会提示找不到python.h)
+3, 安装python
+	1)先确定是否安装 ：python --version 
+	2)(必须安装python-dev 这个版本,否则其他版本的python，在其他应用中会提示找不到python.h)
 	sudo apt-get install python-dev
 	安装完成后，　可以用下面的命令进行确认
 	python --version
