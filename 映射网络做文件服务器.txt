@@ -9,8 +9,8 @@
 	有时虚拟机ip变化之后, 需要修改主机端口8080所对应的虚拟机IP, 否则自动更新连接不上.
 	
 	
-2. 修改 nginx 配置， 添加一配置
-
+2. 修改 nginx 配置， 添加一配置 ,在 http {}中添加
+	
 	server {
 		listen 8082; #默认访问linux 8082端口
 		server_name localhost;
